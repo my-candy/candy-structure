@@ -11,6 +11,7 @@ public class CandyStructureApplicationTests {
 
     @Test
     public void contextLoads() {
+        System.out.println("aaaaaaassasa");
     }
 
 }
