@@ -26,13 +26,34 @@ public class StructureController {
      * 查询某一个catalog下的所有表信息
      * @param catalog
      * @param schemaPattern
+     * @param type
      * @param request
      * @param response
      * @return
      */
     @RequestMapping(value = "/getTables/{catalog}", method = RequestMethod.GET)
-    public ResponseEntity<Result> getTables(@PathVariable String catalog, String schemaPattern, HttpServletRequest request, HttpServletResponse response){
-        Result result = structureService.getTables(catalog,schemaPattern,null,new String[]{"table"});
+    public ResponseEntity<Result> getTables(@PathVariable String catalog, String schemaPattern,String[] type, HttpServletRequest request, HttpServletResponse response){
+        Result result = structureService.getTables(catalog,schemaPattern,null,type);
+        if(result.isSuccess()){
+            return ResponseEntity.ok(result);
+        }else{
+            return ResponseEntity.status(HttpStatus.resolve(result.getResultCode())).body(null);
+        }
+    }
+
+    /**
+     * 查找某一个catalog下的表名为xxx的表
+     * @param catalog
+     * @param tableNamePattem
+     * @param schemaPattern
+     * @param type
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping(value = "/getTables/{catalog}/{tableNamePattem}", method = RequestMethod.GET)
+    public ResponseEntity<Result> getTables(@PathVariable String catalog, @PathVariable String tableNamePattem, String schemaPattern,String[] type, HttpServletRequest request, HttpServletResponse response){
+        Result result = structureService.getTables(catalog,schemaPattern,tableNamePattem,null);
         if(result.isSuccess()){
             return ResponseEntity.ok(result);
         }else{
