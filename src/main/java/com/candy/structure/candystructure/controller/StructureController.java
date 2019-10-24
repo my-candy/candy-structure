@@ -80,6 +80,16 @@ public class StructureController {
         }
     }
 
+    @RequestMapping(value = "/getDiff/{sourceCatalog}/{targetCatalog}", method = RequestMethod.GET)
+    public ResponseEntity<Result> getDiff(@PathVariable String sourceCatalog, @PathVariable String targetCatalog, HttpServletRequest request, HttpServletResponse response){
+        Result result = structureService.getDiff(sourceCatalog,targetCatalog);
+        if(result.isSuccess()){
+            return ResponseEntity.ok(result);
+        }else{
+            return ResponseEntity.status(HttpStatus.resolve(result.getResultCode())).body(null);
+        }
+    }
+
 
 //    /**
 //     *

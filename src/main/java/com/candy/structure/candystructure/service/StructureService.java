@@ -10,4 +10,7 @@ public interface StructureService {
     public Result getTables(String catalog, String schemaPattern, String tableNamePattern, String types[]);
 
     public Result getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern);
+
+    public Result getDiff(String sourceCataLog,String targetCataLog);
+
 }
