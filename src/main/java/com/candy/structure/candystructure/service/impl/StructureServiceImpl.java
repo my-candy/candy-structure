@@ -12,10 +12,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.sql.ConnectionEvent;
 import javax.sql.DataSource;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,15 +28,40 @@ public class StructureServiceImpl implements StructureService {
 
     private static final Logger LOGGER = LogManager.getLogger();
 
+    public Result getCatalogs(){
+        Result result = new Result();
+        try {
+            List<String> dbNameList = new ArrayList<>();
+            DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
+            ResultSet resultSet = metaData.getCatalogs();
+            while(resultSet.next()){
+                dbNameList.add(resultSet.getString(1));
+            }
+            result.setSuccess(true);
+            result.addDefaultModel(dbNameList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
     @Override
     public Result getTables(String catalog, String schemaPattern, String tableNamePattern, String types[]) {
-
         Result result = new Result(false);
         List<StructureTable> structureTableList = new ArrayList<StructureTable>();
         try {
             DatabaseMetaData metaData = dataSource.getConnection().getMetaData();
             ResultSet resultSet = metaData.getTables(catalog,schemaPattern,tableNamePattern,types);
             while(resultSet.next()){
+                System.out.println(resultSet.getString(1));
+                System.out.println(resultSet.getString(2));
+                System.out.println(resultSet.getString(3));
+                System.out.println(resultSet.getString(4));
+                System.out.println(resultSet.getString(5));
+                System.out.println(resultSet.getString(6));
+                System.out.println(resultSet.getString(7));
+                System.out.println(resultSet.getString(8));
+
                 StructureTable structureTable = new StructureTable();
                 structureTable.setTableCat(resultSet.getString(StructureTableEnum.TABLE_CAT.getName()));
                 structureTable.setTableSchem(resultSet.getString(StructureTableEnum.TABLE_SCHEM.getName()));
@@ -56,7 +80,6 @@ public class StructureServiceImpl implements StructureService {
                 result.setSuccess(true);
                 result.addDefaultModel(structureTableList);
             }
-
         } catch (SQLException e) {
             result.setResultCode(500);
             result.setErrorMessage("获取表格信息错误！");
@@ -77,6 +100,17 @@ public class StructureServiceImpl implements StructureService {
                 StructureColumns structureColumns = new StructureColumns();
                 structureColumns.setColumnName(resultSet.getString(StructureColumnsEnum.COLUMN_NAME.getName()));
                 structureColumns.setTableName(resultSet.getString(StructureColumnsEnum.TABLE_NAME.getName()));
+                structureColumns.setBufferLength(resultSet.getString(StructureColumnsEnum.BUFFER_LENGTH.getName()));
+                structureColumns.setCharOctetLength(resultSet.getString(StructureColumnsEnum.CHAR_OCTET_LENGTH.getName()));
+                structureColumns.setColumnDef(resultSet.getString(StructureColumnsEnum.COLUMN_DEF.getName()));
+                structureColumns.setColumnSize(resultSet.getString(StructureColumnsEnum.COLUMN_SIZE.getName()));
+                structureColumns.setTableCat(resultSet.getString(StructureColumnsEnum.TABLE_CAT.getName()));
+                structureColumns.setDataType(resultSet.getInt(StructureColumnsEnum.DATA_TYPE.getName()));
+                structureColumns.setDecimalDigits(resultSet.getString(StructureColumnsEnum.DECIMAL_DIGITS.getName()));
+                structureColumns.setIsNullable(resultSet.getString(StructureColumnsEnum.IS_NULLABLE.getName()));
+                structureColumns.setNullable(resultSet.getString(StructureColumnsEnum.NULLABLE.getName()));
+                structureColumns.setNumPrecRadix(resultSet.getString(StructureColumnsEnum.NUM_PREC_RADIX.getName()));
+                structureColumns.setRemarks(resultSet.getString(StructureColumnsEnum.REMARKS.getName()));
                 structureColumnsList.add(structureColumns);
             }
             if (structureColumnsList.isEmpty()){

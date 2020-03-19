@@ -1,15 +1,12 @@
 package com.candy.structure.candystructure.controller;
 
-import com.candy.structure.candystructure.domain.db.StructureTable;
 import com.candy.structure.candystructure.service.StructureService;
 import com.candy.structure.candystructure.utils.Result;
-import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -17,10 +14,20 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 @RestController
-public class StructureController {
+public class DataBaseController {
 
     @Resource(name = "structureService")
     private StructureService structureService;
+
+    @RequestMapping(value = "/catalogs", method = RequestMethod.GET)
+    public ResponseEntity<Result> getCatalogs(HttpServletRequest request, HttpServletResponse response){
+        Result result = structureService.getCatalogs();
+        if(result.isSuccess()){
+            return ResponseEntity.ok(result);
+        }else{
+            return ResponseEntity.status(HttpStatus.resolve(result.getResultCode())).body(null);
+        }
+    }
 
     /**
      * 查询某一个catalog下的所有表信息
@@ -31,29 +38,31 @@ public class StructureController {
      * @param response
      * @return
      */
-    @RequestMapping(value = "/getTables/{catalog}", method = RequestMethod.GET)
+    @RequestMapping(value = "/tables/{catalog}", method = RequestMethod.GET)
     public ResponseEntity<Result> getTables(@PathVariable String catalog, String schemaPattern,String[] type, HttpServletRequest request, HttpServletResponse response){
         Result result = structureService.getTables(catalog,schemaPattern,null,type);
         if(result.isSuccess()){
             return ResponseEntity.ok(result);
         }else{
-            return ResponseEntity.status(HttpStatus.resolve(result.getResultCode())).body(null);
+            result = new Result();
+            result.setErrorMessage("aaaaaaaaaaa");
+            return ResponseEntity.status(HttpStatus.resolve(404)).body(result);
         }
     }
 
     /**
      * 查找某一个catalog下的表名为xxx的表
      * @param catalog
-     * @param tableNamePattem
+     * @param tableNamePattern
      * @param schemaPattern
      * @param type
      * @param request
      * @param response
      * @return
      */
-    @RequestMapping(value = "/getTables/{catalog}/{tableNamePattem}", method = RequestMethod.GET)
-    public ResponseEntity<Result> getTables(@PathVariable String catalog, @PathVariable String tableNamePattem, String schemaPattern,String[] type, HttpServletRequest request, HttpServletResponse response){
-        Result result = structureService.getTables(catalog,schemaPattern,tableNamePattem,null);
+    @RequestMapping(value = "/tables/{catalog}/{tableNamePattern}", method = RequestMethod.GET)
+    public ResponseEntity<Result> getTables(@PathVariable String catalog, @PathVariable String tableNamePattern, String schemaPattern,String[] type, HttpServletRequest request, HttpServletResponse response){
+        Result result = structureService.getColumns(catalog,schemaPattern,tableNamePattern,null);
         if(result.isSuccess()){
             return ResponseEntity.ok(result);
         }else{
@@ -70,7 +79,7 @@ public class StructureController {
      * @param response
      * @return
      */
-    @RequestMapping(value = "/getColumns/{catalog}/{tableNamePattern}", method = RequestMethod.GET)
+    @RequestMapping(value = "/columns/{catalog}/{tableNamePattern}", method = RequestMethod.GET)
     public ResponseEntity<Result> getColumns(@PathVariable String catalog, @PathVariable String tableNamePattern, String schemaPattern, HttpServletRequest request, HttpServletResponse response){
         Result result = structureService.getColumns(catalog,schemaPattern,tableNamePattern,null);
         if(result.isSuccess()){
@@ -80,7 +89,8 @@ public class StructureController {
         }
     }
 
-    @RequestMapping(value = "/getDiff/{sourceCatalog}/{targetCatalog}", method = RequestMethod.GET)
+
+    @RequestMapping(value = "/catalogs/getDiff/{sourceCatalog}/{targetCatalog}", method = RequestMethod.GET)
     public ResponseEntity<Result> getDiff(@PathVariable String sourceCatalog, @PathVariable String targetCatalog, HttpServletRequest request, HttpServletResponse response){
         Result result = structureService.getDiff(sourceCatalog,targetCatalog);
         if(result.isSuccess()){
@@ -112,4 +122,17 @@ public class StructureController {
 //        Result result = structureService.getColumns(catalog,schemaPattern,tableNamePattern,columnNamePattern);
 //        return ResponseEntity.status(HttpStatus.resolve(result.getResultCode())).body(result);
 //    }
+
+
+    @Autowired
+    private DiscoveryClient discoveryClient;
+
+    @GetMapping(value = "test")
+    public String test(){
+        List<String> services = discoveryClient.getServices();
+        for(String s : services){
+            System.out.println(s);
+        }
+        return "hello spring cloud!";
+    }
 }
